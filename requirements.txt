@@ -1,0 +1,7 @@
+streamlit
+openai
+pandas
+Pillow
+PyPDF2
+requests
+beautifulsoup4
