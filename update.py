@@ -114,7 +114,7 @@ def get_download_link(content, filename, text):
 # AI Agent functions - Automatically initialize the OpenAI client
 def init_openai_client():
     # Use a default API key - in a production app, you'd want to handle this more securely
-    default_api_key = "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"  # Replace with your key or implement secure storage
+    default_api_key = "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"  # Replace with your key or implement secure storage
     
     # Initialize the OpenAI client with the API key
     st.session_state.client = OpenAI(api_key=default_api_key)
@@ -191,7 +191,7 @@ def writer_agent(property_data, current_listing=""):
     
     try:
         response = st.session_state.client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": "You are an experienced real estate agent specializing in SEO-optimized property listings."},
                 {"role": "user", "content": prompt}
@@ -249,7 +249,7 @@ def reviewer_agent(listing, property_data):
     
     try:
         response = st.session_state.client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": "You are an experienced real estate agent who reviews listings for quality, SEO, and target buyer appeal."},
                 {"role": "user", "content": prompt}
@@ -371,7 +371,7 @@ def pricing_agent(property_data, listing, market_data):
     
     try:
         response = st.session_state.client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": "You are an experienced real estate agent specializing in property pricing."},
                 {"role": "user", "content": prompt}
@@ -424,7 +424,7 @@ def accuracy_agent(property_data, document_text):
     
     try:
         response = st.session_state.client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": "You are an Accuracy Reviewer Agent specializing in property detail verification."},
                 {"role": "user", "content": prompt}
@@ -459,7 +459,7 @@ def chat_with_agent(user_message):
     
     try:
         response = st.session_state.client.chat.completions.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=messages,
             max_tokens=500,
             temperature=0.7
@@ -647,7 +647,7 @@ with tab_existing:
             st.markdown(f'<div class="chat-message user-message"><strong>You:</strong> {message["content"]}</div>', unsafe_allow_html=True)
         else:
             st.markdown(f'<div class="chat-message assistant-message"><strong>BURO Agent:</strong> {message["content"]}</div>', unsafe_allow_html=True)
-    api_key_set= "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"
+    api_key_set= "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"
     # Chat input
     user_message = st.text_input("Ask a question or provide additional information")
     if st.button("Send"):
