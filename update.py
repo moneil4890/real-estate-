@@ -114,7 +114,7 @@ def get_download_link(content, filename, text):
 # AI Agent functions - Automatically initialize the OpenAI client
 def init_openai_client():
     # Use a default API key - in a production app, you'd want to handle this more securely
-    default_api_key = "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"  # Replace with your key or implement secure storage
+    default_api_key = key  # Replace with your key or implement secure storage
     
     # Initialize the OpenAI client with the API key
     st.session_state.client = OpenAI(api_key=default_api_key)
@@ -647,7 +647,7 @@ with tab_existing:
             st.markdown(f'<div class="chat-message user-message"><strong>You:</strong> {message["content"]}</div>', unsafe_allow_html=True)
         else:
             st.markdown(f'<div class="chat-message assistant-message"><strong>BURO Agent:</strong> {message["content"]}</div>', unsafe_allow_html=True)
-    api_key_set= "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"
+    api_key_set= key
     # Chat input
     user_message = st.text_input("Ask a question or provide additional information")
     if st.button("Send"):
