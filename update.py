@@ -647,7 +647,7 @@ with tab_existing:
             st.markdown(f'<div class="chat-message user-message"><strong>You:</strong> {message["content"]}</div>', unsafe_allow_html=True)
         else:
             st.markdown(f'<div class="chat-message assistant-message"><strong>BURO Agent:</strong> {message["content"]}</div>', unsafe_allow_html=True)
-    
+    api_key_set= "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"
     # Chat input
     user_message = st.text_input("Ask a question or provide additional information")
     if st.button("Send"):
