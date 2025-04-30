@@ -49,7 +49,7 @@ st.markdown("""
     }
     .buro-header {
         color: #4a4a4a;
-        font-size: 28px;
+        font-size: 38px;  /* Increased from 28px to make it larger */
         font-weight: 600;
         margin-left: 10px;
         margin-top: 5px;
@@ -111,16 +111,14 @@ def get_download_link(content, filename, text):
     href = f'<a href="data:file/txt;base64,{b64}" download="{filename}">{text}</a>'
     return href
 
-# AI Agent functions
-def set_openai_api_key():
-    openai_api_key = st.sidebar.text_input("OpenAI API Key:", type="password")
-    if openai_api_key:
-        # Initialize the OpenAI client with the API key
-        st.session_state.client = OpenAI(api_key=openai_api_key)
-        return True
-    else:
-        st.sidebar.warning("Please enter your OpenAI API key to use the AI features.")
-        return False
+# AI Agent functions - Automatically initialize the OpenAI client
+def init_openai_client():
+    # Use a default API key - in a production app, you'd want to handle this more securely
+    default_api_key = "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"  # Replace with your key or implement secure storage
+    
+    # Initialize the OpenAI client with the API key
+    st.session_state.client = OpenAI(api_key=default_api_key)
+    return True
 
 def critic_agent(property_data, current_listing="", documents=None):
     """Coordinates between different AI agents"""
@@ -146,7 +144,7 @@ def critic_agent(property_data, current_listing="", documents=None):
 def writer_agent(property_data, current_listing=""):
     """Creates SEO optimized property listing with title tag and meta description"""
     if not st.session_state.client:
-        return "Please enter your OpenAI API Key to generate content.", "", "", ""
+        init_openai_client()
     
     # Convert property data to a formatted string
     property_str = "\n".join([f"{k}: {v}" for k, v in property_data.items() if v])
@@ -222,7 +220,7 @@ def writer_agent(property_data, current_listing=""):
 def reviewer_agent(listing, property_data):
     """Reviews the SEO optimized listing for quality and suggestions"""
     if not st.session_state.client:
-        return listing  # Return original if no API key
+        init_openai_client()
     
     # Convert property data to a formatted string
     property_str = "\n".join([f"{k}: {v}" for k, v in property_data.items() if v])
@@ -246,6 +244,7 @@ def reviewer_agent(listing, property_data):
     6. Call to action
     
     If it needs improvement, provide a revised version. If it's already excellent, return it as is.
+    Simply start with an introduction paragraph, and avoid labels like "REVISED LISTING:" or "Property Details".
     """
     
     try:
@@ -267,7 +266,7 @@ def get_real_estate_data(property_data):
     Function to get real estate data from online sources using GPT-4's browsing capability
     """
     if not st.session_state.client:
-        return "No API key provided."
+        init_openai_client()
     
     city = property_data.get('City', '')
     state = property_data.get('State', '')
@@ -341,7 +340,7 @@ def get_real_estate_data(property_data):
 def pricing_agent(property_data, listing, market_data):
     """Generates pricing recommendation based on property details and market data"""
     if not st.session_state.client:
-        return "Please enter your OpenAI API Key to generate pricing recommendations."
+        init_openai_client()
     
     # Convert property data to a formatted string
     property_str = "\n".join([f"{k}: {v}" for k, v in property_data.items() if v])
@@ -395,7 +394,7 @@ def extract_text_from_pdf(pdf_file):
 def accuracy_agent(property_data, document_text):
     """Compares user-entered data with official documents for accuracy"""
     if not st.session_state.client:
-        return "Please enter your OpenAI API Key to perform accuracy checking."
+        init_openai_client()
     
     # Convert property data to a formatted string
     property_str = "\n".join([f"{k}: {v}" for k, v in property_data.items() if v])
@@ -440,7 +439,7 @@ def accuracy_agent(property_data, document_text):
 def chat_with_agent(user_message):
     """Interactive chat with the AI agent to gather more information"""
     if not st.session_state.client:
-        return "Please enter your OpenAI API Key to chat with the agent."
+        init_openai_client()
     
     # Add user message to history
     st.session_state.chat_history.append({"role": "user", "content": user_message})
@@ -472,21 +471,15 @@ def chat_with_agent(user_message):
     except Exception as e:
         return f"Error in chat: {str(e)}"
 
+
 # Main UI
-col1, col2 = st.columns([1, 5])
-with col1:
-    st.image("https://via.placeholder.com/50", width=50)  # Replace with your logo
-with col2:
-    st.markdown('<div class="buro-header">BURO</div>', unsafe_allow_html=True)
-    st.markdown('<div class="listing-optimizer-header">YOUR LISTING OPTIMIZER</div>', unsafe_allow_html=True)
 
-st.markdown("Enter property details and upload official documents in the sections below. You'll get:")
-st.markdown("1. SEO Optimized Listing with Title Tag & Meta Description")
-st.markdown("2. Listing Price Report")
-st.markdown("3. Listing Accuracy Report")
+st.markdown('<div class="buro-header">BURO</div>', unsafe_allow_html=True)
+st.markdown('<div class="listing-optimizer-header">YOUR LISTING OPTIMIZER</div>', unsafe_allow_html=True)
 
-# Setup API key in sidebar
-api_key_set = set_openai_api_key()
+st.markdown("Enter property details and upload official documents. You'll get an SEO optimized listing with Title Tag & Meta Description, Listing Price Report, and Listing Accuracy Report")
+# Initialize OpenAI client
+init_openai_client()
 
 # Create tabs for app modes
 tab_new, tab_existing = st.tabs(["Create New Listing", "Optimize Existing Listing"])
@@ -505,7 +498,13 @@ with tab_new:
         with col2:
             st.session_state.property_data['Square Footage'] = st.number_input("Square Footage", min_value=0, value=2000)
             st.session_state.property_data['Year Built'] = st.number_input("Year Built", min_value=1800, max_value=2025, value=2000)
-            st.session_state.property_data['Lot Size'] = st.text_input("Lot Size (acres)", value="0.25")
+            
+            # Add both options for lot size
+            lot_size_type = st.radio("Lot Size Measurement", ("acres", "square feet"))
+            if lot_size_type == "acres":
+                st.session_state.property_data['Lot Size'] = st.text_input("Lot Size (acres)", value="0.25")
+            else:
+                st.session_state.property_data['Lot Size'] = st.text_input("Lot Size (square feet)", value="10890")
 
     with st.expander("LOCATION DETAILS"):
         col1, col2 = st.columns(2)
@@ -544,11 +543,16 @@ with tab_new:
     with st.expander("TARGET BUYER & ADDITIONAL DETAILS"):
         col1, col2 = st.columns(2)
         with col1:
-            st.session_state.property_data['Target Buyer'] = st.selectbox(
-                "Target Buyer", 
-                ["First-time homebuyers", "Luxury buyers", "Investors", "Retirees/Downsizers", 
-                 "Growing families", "Urban professionals", "Vacation/Second home buyers"]
-            )
+            # Modified to allow custom target buyer
+            target_buyer_options = ["First-time homebuyers", "Luxury buyers", "Investors", "Retirees/Downsizers", 
+                 "Growing families", "Urban professionals", "Vacation/Second home buyers", "Custom"]
+            target_buyer_selection = st.selectbox("Target Buyer", target_buyer_options)
+            
+            if target_buyer_selection == "Custom":
+                st.session_state.property_data['Target Buyer'] = st.text_input("Enter Custom Target Buyer")
+            else:
+                st.session_state.property_data['Target Buyer'] = target_buyer_selection
+                
             st.session_state.property_data['HOA'] = st.text_input("HOA Information")
             st.session_state.property_data['Taxes'] = st.text_input("Annual Taxes")
         with col2:
@@ -557,7 +561,7 @@ with tab_new:
             st.session_state.property_data['Selling Points'] = st.text_area("Key Selling Points")
 
     with st.expander("ACCURACY CHECKER"):
-        st.write("Upload official property documents to verify accuracy of your listing details.")
+        st.write("Upload official property documents to verify accuracy of your listing details. This is typically the Property Record Card.")
         uploaded_docs = st.file_uploader("Upload official documents (PDF)", type="pdf", accept_multiple_files=True)
         
         if uploaded_docs:
@@ -569,31 +573,28 @@ with tab_new:
 
     # Process button
     if st.button("Generate Listing and Reports"):
-        if api_key_set:
-            with st.spinner("Our AI agents are working on your listing and reports..."):
-                # Check if we have enough data
-                if len([v for k, v in st.session_state.property_data.items() if v and k not in ["Street Address"]]) < 5:
-                    st.error("Please fill in more property details before generating reports.")
-                else:
-                    # Generate the reports using our AI agents
-                    seo_listing, title_tag, meta_description, keyword_analysis, price_report, accuracy_report = critic_agent(
-                        st.session_state.property_data, 
-                        "",  # No current listing for new listing flow
-                        st.session_state.uploaded_documents
-                    )
-                    
-                    # Store results in session state
-                    st.session_state.seo_listing = seo_listing
-                    st.session_state.title_tag = title_tag
-                    st.session_state.meta_description = meta_description
-                    st.session_state.keyword_analysis = keyword_analysis
-                    st.session_state.price_report = price_report
-                    if st.session_state.uploaded_documents:
-                        st.session_state.accuracy_report = accuracy_report
-                    
-                    st.success("AI reports generated successfully!")
-        else:
-            st.warning("Please provide your OpenAI API key in the sidebar.")
+        with st.spinner("Our AI agents are working on your listing and reports..."):
+            # Check if we have enough data
+            if len([v for k, v in st.session_state.property_data.items() if v and k not in ["Street Address"]]) < 5:
+                st.error("Please fill in more property details before generating reports.")
+            else:
+                # Generate the reports using our AI agents
+                seo_listing, title_tag, meta_description, keyword_analysis, price_report, accuracy_report = critic_agent(
+                    st.session_state.property_data, 
+                    "",  # No current listing for new listing flow
+                    st.session_state.uploaded_documents
+                )
+                
+                # Store results in session state
+                st.session_state.seo_listing = seo_listing
+                st.session_state.title_tag = title_tag
+                st.session_state.meta_description = meta_description
+                st.session_state.keyword_analysis = keyword_analysis
+                st.session_state.price_report = price_report
+                if st.session_state.uploaded_documents:
+                    st.session_state.accuracy_report = accuracy_report
+                
+                st.success("AI reports generated successfully!")
 
 with tab_existing:
     st.header("Optimize Your Existing Listing Description")
@@ -614,12 +615,16 @@ with tab_existing:
         with col2:
             st.session_state.property_data['Bedrooms'] = st.number_input("Bedrooms", min_value=0, max_value=20, value=3, key="existing_bedrooms")
             st.session_state.property_data['Bathrooms'] = st.number_input("Bathrooms", min_value=0.0, max_value=20.0, value=2.0, step=0.5, key="existing_bathrooms")
-            st.session_state.property_data['Target Buyer'] = st.selectbox(
-                "Target Buyer", 
-                ["First-time homebuyers", "Luxury buyers", "Investors", "Retirees/Downsizers", 
-                 "Growing families", "Urban professionals", "Vacation/Second home buyers"],
-                key="existing_target_buyer"
-            )
+            
+            # Modified to allow custom target buyer
+            target_buyer_options = ["First-time homebuyers", "Luxury buyers", "Investors", "Retirees/Downsizers", 
+                "Growing families", "Urban professionals", "Vacation/Second home buyers", "Custom"]
+            target_buyer_selection = st.selectbox("Target Buyer", target_buyer_options, key="existing_target_buyer_selection")
+            
+            if target_buyer_selection == "Custom":
+                st.session_state.property_data['Target Buyer'] = st.text_input("Enter Custom Target Buyer", key="existing_custom_target")
+            else:
+                st.session_state.property_data['Target Buyer'] = target_buyer_selection
     
     with st.expander("ADDITIONAL DETAILS (OPTIONAL)"):
         col1, col2 = st.columns(2)
@@ -735,40 +740,6 @@ with tab4:
         st.info("Upload official property documents to generate an accuracy report.")
     else:
         st.info("Generate your listing and upload official documents to see the accuracy report here.")
-
-# Add a section to explain the SEO optimization process
-with st.expander("Understanding SEO for Real Estate Listings"):
-    st.markdown("""
-    ## How We Optimize Your Listing for SEO
-    
-    ### 1. Keyword Research & Targeting
-    We analyze the property details you provide to identify the most effective keywords for:
-    - **Location**: City, neighborhood, and nearby landmarks
-    - **Property Type**: Single family home, condo, townhouse, etc.
-    - **Features**: Bedrooms, bathrooms, pool, renovated kitchen, etc.
-    - **Target Audience**: First-time buyers, luxury, investors, etc.
-    
-    ### 2. Title Tag & Meta Description
-    We create compelling titles and descriptions that:
-    - Include primary keywords for search visibility
-    - Create interest and encourage clicks
-    - Highlight the most attractive features
-    
-    ### 3. Property Description
-    Our AI creates listings that:
-    - Incorporate keywords naturally throughout the text
-    - Use vivid language to engage potential buyers
-    - Highlight unique selling points
-    - Target the language to appeal to your likely buyers
-    - Include a clear call to action
-    
-    ### 4. Measuring Success
-    Effective SEO for real estate listings typically results in:
-    - Higher ranking in search results
-    - More clicks and views of your listing
-    - More qualified inquiries
-    - Faster property sales
-    """)
 
 # Footer
 st.markdown("---")
